@@ -113,7 +113,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         root.addView(gpsButton)
         val stopGps = Button(this).apply { text = "ZATRZYMAJ MONITOROWANIE GPS"; setOnClickListener {
             stopService(Intent(this@MainActivity, TrackingService::class.java))
-            overlay.disableMyLocation(); overlay.disableFollowLocation()
+            overlay.disableMyLocation()
             gpsButton.text = "WŁĄCZ GPS / MONITOROWANIE W TLE"
             speedView.text = "Prędkość GPS: — km/h"
         } }
