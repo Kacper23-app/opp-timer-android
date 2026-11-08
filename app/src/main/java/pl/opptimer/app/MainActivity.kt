@@ -113,7 +113,6 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         root.addView(gpsButton)
         val stopGps = Button(this).apply { text = "ZATRZYMAJ MONITOROWANIE GPS"; setOnClickListener {
             stopService(Intent(this@MainActivity, TrackingService::class.java))
-            overlay.disableMyLocation()
             gpsButton.text = "WŁĄCZ GPS / MONITOROWANIE W TLE"
             speedView.text = "Prędkość GPS: — km/h"
         } }
@@ -194,7 +193,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     }
     override fun onDestroy() {
         running = false; handler.removeCallbacks(ticker)
-        overlay.disableMyLocation(); map.onDetach()
+        map.onDetach()
         voice?.stop(); voice?.shutdown()
         super.onDestroy()
     }
