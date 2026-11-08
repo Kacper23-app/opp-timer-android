@@ -1,26 +1,24 @@
-# OPP TIMER 6.0 — Polska (wersja testowa)
+# OPP TIMER 6.1 — Warszawa i okolice
 
-Natywna aplikacja Android (Kotlin, osmdroid), do instalacji na Samsungu przez APK z GitHub Actions.
+Projekt Android (wersja testowa). Mapa OpenStreetMap / osmdroid.
 
-## Obecne funkcje
-- mapa OpenStreetMap Polski i śledzenie pozycji po udzieleniu zgody;
-- GPS foreground service uruchamiany wyłącznie przyciskiem, powiadomienie z możliwością zatrzymania;
-- prędkość GPS (jeśli odbiornik udostępnia wiarygodny pomiar);
-- ręczny kalkulator orientacyjnego czasu przejazdu: `ceil(długość_km / limit_km_h * 3600)`;
-- testowe odliczanie i polskie komunikaty TTS (jeśli język jest dostępny).
+## Funkcje
+- GPS i prędkość z usługi pierwszoplanowej
+- Mapa automatycznie przesuwana do pozycji telefonu (po włączeniu GPS)
+- Obracanie mapy zgodnie z kierunkiem ruchu GPS (gdy urządzenie udostępnia wiarygodny bearing)
+- Przycisk włączania/wyłączania śledzenia
+- Ręczny testowy licznik czasu
+- Powiadomienie GPS i zatrzymanie usługi
 
-## WAŻNE: nie jest to jeszcze gotowy system OPP
-Plik `app/src/main/assets/opp_segments.json` jest **pusty** (`[]`). Aplikacja **nie rozpoznaje** rzeczywistych odcinków OPP, nie ma aktualnej bazy całej Polski, nie wykrywa automatycznie wjazdu/wyjazdu, nie oblicza rzeczywistej średniej prędkości na OPP i nie zapewnia ostrzeżeń o rzeczywistych odcinkach. Nazwa 6.0 oznacza wersję rozwojową, nie potwierdza gotowości produkcyjnej.
+## Ograniczenia
+- To **widok 2D z obrotem**, NIE mapa perspektywiczna 3D jak Google Maps. osmdroid nie obsługuje pochylenia kamery. Do prawdziwego widoku 3D potrzebna będzie migracja do silnika z obsługą pitch/tilt.
+- Brak zweryfikowanych punktów OPP w Warszawie i okolicach. Plik opp_segments.json jest pusty.
+- Brak automatycznego rozpoznawania OPP, nawigacji po trasie i wskazówek zakręt po zakręcie.
+- Na postoju orientacja może być nieznana; obrót działa na podstawie bearing GPS podczas ruchu.
+- Nie używaj telefonu podczas prowadzenia. Koniec licznika nie oznacza końca pomiaru ani prawa do przekroczenia limitu.
 
-Nie obsługuj telefonu podczas jazdy. Upływ obliczonego czasu nie oznacza końca odcinka OPP i nie upoważnia do przekroczenia limitu.
+## Instalacja
+Zawartość tego katalogu wgraj do repozytorium GitHub (nie folder nadrzędny), następnie Actions → najnowszy Build → Artifacts → pobierz ZIP z APK. Debug APK może mieć inny podpis niż poprzednia instalacja. Zachowaj kopię danych przed odinstalowaniem starszej aplikacji.
 
-## Budowanie
-GitHub Actions → najnowszy `Build OPP TIMER APK` → Artifacts → `OPP-TIMER-6.0-debug` → pobierz ZIP → rozpakuj `app-debug.apk` na Androidzie.
-
-**Uwaga o aktualizacji:** debug APK zbudowane w różnych uruchomieniach GitHub Actions mogą być podpisane różnymi kluczami. Jeśli Android zgłosi konflikt podpisu, wykonaj kopię danych (jeśli potrzebna), odinstaluj starą aplikację i zainstaluj nową. Dla aktualizacji bez utraty danych potrzebny jest stały klucz podpisu.
-
-## Dalsze prace przed wydaniem
-1. Pozyskać legalnie używaną, aktualną i zweryfikowaną bazę OPP (współrzędne początku i końca, przebieg, kierunek, limit, data weryfikacji).
-2. Wdrożyć wykrywanie wjazdu/wyjazdu, uwzględnić niedokładność GPS i ograniczenia prędkości zależne od pojazdu.
-3. Przetestować GPS, foreground service, TTS, wygaszanie ekranu i działanie na urządzeniach Samsung.
-4. Dodać trwałe podpisywanie APK, testy automatyczne i politykę prywatności.
+## Uwaga dotycząca projektu
+Projekt przygotowano na podstawie archiwum 6.0; jego uruchomienie na Samsungu wymaga kompilacji i testów.

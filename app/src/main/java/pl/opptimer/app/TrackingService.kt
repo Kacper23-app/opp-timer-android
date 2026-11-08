@@ -34,7 +34,7 @@ class TrackingService : Service(), LocationListener {
         val stopIntent = Intent(this, TrackingService::class.java).apply { action = ACTION_STOP }
         val pending = PendingIntent.getService(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val notification = Notification.Builder(this, channelId)
-            .setContentTitle("OPP TIMER 6.0 — GPS")
+            .setContentTitle("OPP TIMER 6.1 — GPS")
             .setContentText("Monitorowanie lokalizacji aktywne • brak zweryfikowanej bazy OPP")
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setOngoing(true)
@@ -56,9 +56,17 @@ class TrackingService : Service(), LocationListener {
         getSharedPreferences("gps_live", MODE_PRIVATE).edit()
             .putFloat("speed", speed)
             .putLong("updated", SystemClock.elapsedRealtime())
+            .putLong("lat_bits", java.lang.Double.doubleToRawLongBits(location.latitude))
+            .putLong("lon_bits", java.lang.Double.doubleToRawLongBits(location.longitude))
+            .putBoolean("has_bearing", location.hasBearing())
+            .putFloat("bearing", location.bearing)
             .apply()
         sendBroadcast(Intent(ACTION_LOCATION).setPackage(packageName)
-            .putExtra("speed", speed))
+            .putExtra("speed", speed)
+            .putExtra("latitude", location.latitude)
+            .putExtra("longitude", location.longitude)
+            .putExtra("hasBearing", location.hasBearing())
+            .putExtra("bearing", location.bearing))
     }
 
     override fun onDestroy() {

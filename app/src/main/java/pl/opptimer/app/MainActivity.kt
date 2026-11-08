@@ -17,6 +17,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import android.graphics.drawable.GradientDrawable
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.util.Locale
 import kotlin.math.ceil
@@ -29,6 +30,10 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private lateinit var status: TextView
     private lateinit var startButton: Button
     private lateinit var gpsButton: Button
+    private lateinit var followButton: Button
+    private var following = true
+    private var lastPosition: GeoPoint? = null
+    private var lastBearing: Float? = null
     private lateinit var distanceInput: EditText
     private lateinit var limitInput: EditText
     private val handler = Handler(Looper.getMainLooper())
@@ -60,6 +65,17 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         override fun onReceive(context: Context?, intent: Intent?) {
             lastSpeed = intent?.getFloatExtra("speed", -1f) ?: -1f
             showSpeed()
+            val lat = intent?.getDoubleExtra("latitude", Double.NaN) ?: Double.NaN
+            val lon = intent?.getDoubleExtra("longitude", Double.NaN) ?: Double.NaN
+            if (lat.isFinite() && lon.isFinite()) {
+                val position = GeoPoint(lat, lon)
+                lastPosition = position
+                if (following) map.controller.animateTo(position)
+            }
+            if (intent?.getBooleanExtra("hasBearing", false) == true) {
+                lastBearing = intent.getFloatExtra("bearing", 0f)
+                if (following) map.setMapOrientation(-lastBearing!!)
+            }
         }
     }
 
@@ -83,7 +99,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             this.text = text; textSize = size; setTextColor(color); gravity = Gravity.CENTER
             setPadding(8, 5, 8, 5)
         }
-        root.addView(label("OPP TIMER 6.0 • POLSKA", 22f))
+        root.addView(label("OPP TIMER 6.1 • WARSZAWA", 22f))
         clock = label("00:00", 40f, Color.rgb(52, 211, 153))
         root.addView(clock)
         speedView = label("Prędkość GPS: — km/h", 17f)
@@ -104,9 +120,25 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         root.addView(startButton)
         map = MapView(this).apply {
             setTileSource(TileSourceFactory.MAPNIK); setMultiTouchControls(true)
-            controller.setZoom(6.0); controller.setCenter(GeoPoint(52.1, 19.4))
+            controller.setZoom(16.5); controller.setCenter(GeoPoint(52.2297, 21.0122))
+            setTilesScaledToDpi(true)
         }
         root.addView(map, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        followButton = Button(this).apply {
+            text = "ŚLEDŹ AUTO • WIDOK KIERUNKU JAZDY"
+            setOnClickListener {
+                following = !following
+                if (following) {
+                    lastPosition?.let { map.controller.animateTo(it) }
+                    lastBearing?.let { map.setMapOrientation(-it) }
+                    map.controller.setZoom(17.0)
+                } else {
+                    map.setMapOrientation(0f)
+                }
+                text = if (following) "ŚLEDŹ AUTO • WIDOK KIERUNKU JAZDY" else "WŁĄCZ ŚLEDZENIE AUTA"
+            }
+        }
+        root.addView(followButton)
         overlay = MyLocationNewOverlay(map)
         map.overlays.add(overlay)
         gpsButton = Button(this).apply { text = "WŁĄCZ GPS / MONITOROWANIE W TLE"; setOnClickListener { enableGps() } }
@@ -117,9 +149,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             speedView.text = "Prędkość GPS: — km/h"
         } }
         root.addView(stopGps)
-        val count = try { JSONArray(assets.open("opp_segments.json").bufferedReader().use { it.readText() }).length() } catch (_: Exception) { 0 }
-        status = label(if (count == 0) "TRYB TESTOWY — brak zweryfikowanych odcinków OPP" else
-            "W bazie $count odcinków • automatyczne wykrywanie jeszcze nieaktywne", 12f)
+        status = label("WARSZAWA I OKOLICE • TRYB TESTOWY • BRAK ZWERYFIKOWANYCH OPP", 12f)
         root.addView(status)
         setContentView(root)
         voice = TextToSpeech(this, this)
@@ -151,7 +181,10 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 101)
             return
         }
-        overlay.enableMyLocation(); overlay.enableFollowLocation()
+        overlay.enableMyLocation()
+        following = true
+        followButton.text = "ŚLEDŹ AUTO • WIDOK KIERUNKU JAZDY"
+        map.controller.setZoom(17.0)
         try {
             startForegroundService(Intent(this, TrackingService::class.java))
             gpsButton.text = "GPS AKTYWNY"
@@ -185,6 +218,16 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         val pref = getSharedPreferences("gps_live", MODE_PRIVATE)
         if (SystemClock.elapsedRealtime() - pref.getLong("updated", 0) < 5000) {
             lastSpeed = pref.getFloat("speed", -1f); showSpeed()
+            val lat = java.lang.Double.longBitsToDouble(pref.getLong("lat_bits", java.lang.Double.doubleToRawLongBits(Double.NaN)))
+            val lon = java.lang.Double.longBitsToDouble(pref.getLong("lon_bits", java.lang.Double.doubleToRawLongBits(Double.NaN)))
+            if (lat.isFinite() && lon.isFinite()) {
+                lastPosition = GeoPoint(lat, lon)
+                if (following) lastPosition?.let { map.controller.animateTo(it) }
+            }
+            if (pref.getBoolean("has_bearing", false)) {
+                lastBearing = pref.getFloat("bearing", 0f)
+                if (following) map.setMapOrientation(-lastBearing!!)
+            }
         }
     }
     override fun onPause() {
