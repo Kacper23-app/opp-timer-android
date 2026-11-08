@@ -1,31 +1,26 @@
-# OPP TIMER 5.0 — natywna aplikacja Android (projekt źródłowy)
+# OPP TIMER 6.0 — Polska (wersja testowa)
 
-**Status:** projekt rozwojowy, nie gotowy produkt do jazdy. Paczka zawiera kod źródłowy, **nie gotowy APK**.
+Natywna aplikacja Android (Kotlin, osmdroid), do instalacji na Samsungu przez APK z GitHub Actions.
 
-## Co działa w kodzie
-- Natywny ekran Android i mapa OpenStreetMap (osmdroid).
-- Pobieranie pozycji GPS przez usługę pierwszoplanową z widocznym powiadomieniem.
-- Pokazywanie pozycji i prędkości GPS na mapie.
-- Testowy licznik 5 minut dla **fikcyjnego** odcinka 10 km / 120 km/h.
-- Podpis © OpenStreetMap contributors pod mapą.
+## Obecne funkcje
+- mapa OpenStreetMap Polski i śledzenie pozycji po udzieleniu zgody;
+- GPS foreground service uruchamiany wyłącznie przyciskiem, powiadomienie z możliwością zatrzymania;
+- prędkość GPS (jeśli odbiornik udostępnia wiarygodny pomiar);
+- ręczny kalkulator orientacyjnego czasu przejazdu: `ceil(długość_km / limit_km_h * 3600)`;
+- testowe odliczanie i polskie komunikaty TTS (jeśli język jest dostępny).
 
-## Czego jeszcze nie ma
-- Zweryfikowanej bazy początku/końca OPP, kierunków i limitów.
-- Automatycznego wykrywania prawdziwych OPP i niezawodnej obsługi tuneli.
-- Wyznaczania tras, zgłoszeń wypadków i korków, głosowych alertów.
-- Testów na fizycznym urządzeniu i podpisanej wersji produkcyjnej.
+## WAŻNE: nie jest to jeszcze gotowy system OPP
+Plik `app/src/main/assets/opp_segments.json` jest **pusty** (`[]`). Aplikacja **nie rozpoznaje** rzeczywistych odcinków OPP, nie ma aktualnej bazy całej Polski, nie wykrywa automatycznie wjazdu/wyjazdu, nie oblicza rzeczywistej średniej prędkości na OPP i nie zapewnia ostrzeżeń o rzeczywistych odcinkach. Nazwa 6.0 oznacza wersję rozwojową, nie potwierdza gotowości produkcyjnej.
 
-## Budowanie APK wyłącznie z telefonu i GitHuba
-**Uwaga:** To oddzielny projekt Android. NIE wgrywaj go do repozytorium `opp-timer` obsługującego GitHub Pages, bo pomieszasz projekt strony z projektem Android.
+Nie obsługuj telefonu podczas jazdy. Upływ obliczonego czasu nie oznacza końca odcinka OPP i nie upoważnia do przekroczenia limitu.
 
-1. Na GitHubie utwórz nowe publiczne lub prywatne repozytorium `opp-timer-android`.
-2. Rozpakuj ZIP i wgraj **zawartość folderu** (nie sam folder) do katalogu głównego nowego repozytorium. Zachowaj strukturę `app/src/main/...` i `.github/workflows/build-apk.yml`.
-3. GitHub w przeglądarce mobilnej może nie pozwalać wygodnie wgrać całych folderów. Najłatwiej użyć mobilnego edytora Git z obsługą repozytoriów lub opcji dodania plików z pełną ścieżką. Nie wrzucaj samego ZIP-a: workflow nie rozpakowuje archiwum.
-4. Otwórz **Actions → Build Android APK → Run workflow** (albo workflow uruchomi się po push do `main`).
-5. Po zielonym wyniku otwórz przebieg workflow → **Artifacts → OPP-TIMER-5-debug-APK**. Pobierz ZIP z APK, rozpakuj, uruchom `app-debug.apk` na Samsungu.
-6. Samsung może zapytać o pozwolenie na instalowanie aplikacji z danego źródła. Zezwalaj wyłącznie, jeśli ufasz własnemu kodowi i wynikowi własnego workflow.
+## Budowanie
+GitHub Actions → najnowszy `Build OPP TIMER APK` → Artifacts → `OPP-TIMER-6.0-debug` → pobierz ZIP → rozpakuj `app-debug.apk` na Androidzie.
 
-**Debug APK** służy do testów, nie do publikacji w Google Play. W razie czerwonego błędu Actions wyślij jego zrzut lub log.
+**Uwaga o aktualizacji:** debug APK zbudowane w różnych uruchomieniach GitHub Actions mogą być podpisane różnymi kluczami. Jeśli Android zgłosi konflikt podpisu, wykonaj kopię danych (jeśli potrzebna), odinstaluj starą aplikację i zainstaluj nową. Dla aktualizacji bez utraty danych potrzebny jest stały klucz podpisu.
 
-## Bezpieczeństwo
-Przestrzegaj znaków drogowych. Czas nie gwarantuje uniknięcia mandatu. Nie obsługuj telefonu podczas prowadzenia. GPS w tle wymaga uprawnień i może być ograniczany przez system.
+## Dalsze prace przed wydaniem
+1. Pozyskać legalnie używaną, aktualną i zweryfikowaną bazę OPP (współrzędne początku i końca, przebieg, kierunek, limit, data weryfikacji).
+2. Wdrożyć wykrywanie wjazdu/wyjazdu, uwzględnić niedokładność GPS i ograniczenia prędkości zależne od pojazdu.
+3. Przetestować GPS, foreground service, TTS, wygaszanie ekranu i działanie na urządzeniach Samsung.
+4. Dodać trwałe podpisywanie APK, testy automatyczne i politykę prywatności.

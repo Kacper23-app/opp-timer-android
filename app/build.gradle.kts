@@ -12,8 +12,8 @@ android {
         applicationId = "pl.opptimer.app"
         minSdk = 26
         targetSdk = 35
-versionCode = 510
-versionName = "5.1.0"
+versionCode = 600
+versionName = "6.0.0"
     }
 
     compileOptions {
